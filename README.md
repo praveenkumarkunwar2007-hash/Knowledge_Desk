@@ -1,192 +1,210 @@
 # Knowledge Desk
 
-**A document-based AI assistant that lets you upload files and ask questions about their contents.**
+**Knowledge Desk** is a browser-based AI knowledge assistant that allows users to upload documents and ask questions about their content.
 
-Knowledge Desk is a lightweight Retrieval-Augmented Generation (RAG) application built with **FastAPI**, **TF-IDF search**, and the **Hugging Face Inference API**. It provides a simple browser interface for uploading PDF, TXT, and Markdown documents, then asking questions grounded in the uploaded material.
-
-> **Important:** The app sends retrieved document text and your question to the configured Hugging Face model when you ask a question. Do not upload confidential or sensitive documents unless you are comfortable with that processing.
+The application uses **client-side document retrieval with TF-IDF** and a **Hugging Face language model** to generate answers based only on the retrieved passages from the uploaded documents.
 
 ## Features
 
-- Upload PDF, TXT, and Markdown (`.md`) documents.
-- Extract text and split it into overlapping chunks.
-- Retrieve relevant chunks using TF-IDF weighting and cosine similarity.
-- Generate context-based answers with a Hugging Face chat model.
-- Show source document names alongside answers.
-- Persist the local index between server restarts.
-- View, remove, or clear indexed documents.
-- Use the built-in browser UI or FastAPI's interactive API docs.
-- Configure the model and retrieval settings through environment variables.
+*  Upload PDF, TXT, and Markdown documents
+*  Search documents using TF-IDF-based retrieval
+*  Generate answers using a Hugging Face language model
+*  Display the source documents used for each answer
+*  Store documents and conversations in browser local storage
+*  Drag-and-drop document uploading
+*  Responsive interface for smaller screens
+*  Hugging Face API token is stored locally in the browser
+*  Retrieval-Augmented Generation (RAG) workflow
+*  No dedicated backend server required
 
-## How it works
+## Technologies Used
 
-1. **Upload:** Text is extracted from a supported document.
-2. **Chunk:** The text is split into overlapping sections.
-3. **Index:** Each chunk is tokenized and stored in a local JSON index.
-4. **Retrieve:** TF-IDF similarity selects the most relevant chunks for a question.
-5. **Answer:** The selected context is sent to the configured Hugging Face chat model to produce an answer.
+* **HTML5**
+* **CSS3**
+* **JavaScript**
+* **PDF.js**
+* **Hugging Face Inference API**
+* **Llama 3.1 8B Instruct**
+* **TF-IDF**
+* **Cosine Similarity**
+* **Browser LocalStorage**
 
-```text
-Document → Text extraction → Chunks → TF-IDF index
-                                         ↑
-Question → TF-IDF retrieval → Relevant context → Hugging Face model → Answer + sources
-```
+## How It Works
 
-This is a deliberately straightforward RAG implementation. TF-IDF is lightweight and easy to inspect, but it primarily matches words rather than deeper semantic meaning.
-
-## Tech stack
-
-- Python
-- FastAPI and Uvicorn
-- Hugging Face Inference API
-- TF-IDF retrieval with cosine similarity
-- pypdf for PDF text extraction
-- HTML, CSS, and JavaScript frontend
-
-## Project structure
+Knowledge Desk follows a simple RAG pipeline:
 
 ```text
-knowledge-desk/
-├── backend/
-│   ├── main.py          # FastAPI routes and app
-│   ├── config.py        # Environment-based configuration
-│   ├── ingest.py        # Document extraction and chunking
-│   ├── rag.py           # Retrieval-augmented answer generation
-│   └── tfidf_store.py   # TF-IDF index and persistence
-├── frontend/
-│   └── index.html       # Browser interface
-├── data/
-│   ├── uploads/         # Uploaded files (not committed)
-│   └── index/           # Local index files (not committed)
-├── .env.example
-├── .gitignore
-├── requirements.txt
-└── README.md
+              User
+                │
+                ▼
+       Upload Documents
+                │
+                ▼
+       Text Extraction
+                │
+                ▼
+        Text Chunking
+                │
+                ▼
+       TF-IDF Indexing
+                │
+                ▼
+        User Question
+                │
+                ▼
+      Similarity Retrieval
+                │
+                ▼
+       Relevant Passages
+                │
+                ▼
+       Hugging Face LLM
+                │
+                ▼
+        Grounded Answer
+                │
+                ▼
+          Source Citations
 ```
 
-## Requirements
+## Supported Documents
 
-- Python 3.10 or newer recommended
-- A Hugging Face account and access to a compatible chat model for AI-generated answers
-- Internet access when calling the Hugging Face API
+The application currently supports:
 
-## Run locally
+* `.pdf`
+* `.txt`
+* `.md`
 
-### 1. Download or clone the repository
+Uploaded documents are processed directly in the browser.
 
-If you cloned it:
+## How to Run
 
-```bash
-cd knowledge-desk
+Download or open the project and launch `index.html` in a modern web browser.
+
+For the best experience, use a local development server such as **VS Code Live Server**.
+
+After opening the application:
+
+1. Enter your Hugging Face API token.
+2. Click **Save**.
+3. Upload a PDF, TXT, or Markdown document.
+4. Wait for the document to be indexed.
+5. Enter a question related to the uploaded document.
+6. Click **Ask**.
+7. The application retrieves relevant passages and sends them to the selected Hugging Face model.
+8. The generated answer and source passages are displayed in the interface.
+
+## Hugging Face API Token
+
+Knowledge Desk requires a Hugging Face API token for answer generation.
+
+The token is entered through the application's interface and stored in the browser's `localStorage`.
+
+**Important:** Never hard-code your API token into `index.html` before pushing the project to GitHub.
+
+Do not commit:
+
+```text
+hf_xxxxxxxxxxxxxxxxx
 ```
 
-### 2. Create and activate a virtual environment
+or any other secret API credentials.
 
-**Windows PowerShell**
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+## Retrieval System
+
+The application uses a lightweight client-side retrieval system.
+
+Documents are:
+
+1. Extracted
+2. Cleaned
+3. Divided into overlapping chunks
+4. Tokenized
+5. Indexed using TF-IDF
+6. Compared against the user's question using cosine similarity
+
+The most relevant passages are then provided to the language model as context.
+
+## AI Model
+
+The current implementation uses:
+
+```text
+meta-llama/Llama-3.1-8B-Instruct
 ```
 
-**Windows Command Prompt**
-```bat
-python -m venv .venv
-.venv\Scripts\activate.bat
+through the Hugging Face Inference Providers router.
+
+The model is instructed to answer using only the retrieved document context and avoid guessing when the required information is not available.
+
+## Data Storage
+
+Knowledge Desk uses browser `localStorage` to save:
+
+* Uploaded document indexes
+* Conversation history
+* Hugging Face API token
+
+This means the data remains available when the application is opened again in the same browser.
+
+## Privacy
+
+Documents are processed in the browser for text extraction and retrieval.
+
+However, relevant retrieved passages are sent to the Hugging Face API when an answer is generated.
+
+Therefore, do not upload confidential or sensitive documents unless you understand the data-sharing implications of the model/API you are using.
+
+## Project Structure
+
+```text
+Knowledge-Desk/
+│
+├── index.html       # Main application
+├── README.md        # Project documentation
+├── .gitignore       # Files excluded from Git
+└── LICENSE          # Project license
 ```
 
-**macOS / Linux**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+## Future Improvements
 
-### 3. Install dependencies
+Possible future improvements include:
 
-```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
+* Semantic embeddings instead of TF-IDF
+* Vector database integration
+* Better document parsing
+* Multiple AI model selection
+* Streaming AI responses
+* Authentication
+* Backend API
+* Cloud document storage
+* Conversation export
+* Markdown-formatted AI responses
+* Better PDF support
+* OCR for scanned PDFs
+* Deployment using GitHub Pages
 
-### 4. Configure Hugging Face (optional in the app, needed for model answers)
+## Learning Objectives
 
-Copy `.env.example` to `.env` and add your Hugging Face token.
+This project demonstrates practical concepts in:
 
-**PowerShell**
-```powershell
-Copy-Item .env.example .env
-```
+* Artificial Intelligence
+* Large Language Models
+* Retrieval-Augmented Generation
+* Natural Language Processing
+* Information Retrieval
+* TF-IDF
+* Cosine Similarity
+* API Integration
+* Frontend Development
+* Browser Storage
+* Document Processing
 
-**macOS / Linux**
-```bash
-cp .env.example .env
-```
+## Author
 
-Open `.env` and replace the placeholder `HF_API_KEY` with your own token. Never commit `.env` or share your token publicly. You can create a token in [Hugging Face Settings](https://huggingface.co/settings/tokens).
+**Praveen Kumar kunwar**
 
-The browser interface may also provide a field for entering a token for a session. Treat tokens as secrets and use only your own token.
+GitHub: `praveenkumarkunwar2007-hash`
 
-### 5. Start the server
 
-Run this from the repository root:
 
-```bash
-uvicorn backend.main:app --reload
-```
-
-### 6. Open Knowledge Desk
-
-- **App:** http://127.0.0.1:8000
-- **Interactive API documentation:** http://127.0.0.1:8000/docs
-- **Health check:** http://127.0.0.1:8000/api/health
-
-Upload a supported document, then ask a question about its contents.
-
-## Configuration
-
-The application reads these optional values from `.env`:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `HF_API_KEY` | Empty | Hugging Face API token |
-| `HF_MODEL` | `meta-llama/Llama-3.1-8B-Instruct` | Chat model ID |
-| `CHUNK_SIZE` | `800` | Approximate characters per text chunk |
-| `CHUNK_OVERLAP` | `120` | Characters shared between adjacent chunks |
-| `TOP_K` | `4` | Number of relevant chunks retrieved |
-
-The default model may require account access or model-provider availability. If it is unavailable to your account, configure a compatible model supported by the Hugging Face router.
-
-## API endpoints
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `POST` | `/api/upload` | Upload and index a PDF, TXT, or MD file |
-| `POST` | `/api/ask` | Ask a question using the indexed documents |
-| `GET` | `/api/documents` | List indexed documents |
-| `DELETE` | `/api/documents/{doc_id}` | Remove one indexed document |
-| `DELETE` | `/api/documents` | Clear the knowledge base |
-| `GET` | `/api/health` | Check application and index status |
-
-## Limitations
-
-- Retrieval is keyword-oriented; it may miss relevant passages phrased differently from the question.
-- Scanned PDFs without an embedded text layer may not yield extractable text; OCR is not currently included.
-- Generated answers can still be incorrect. Verify important information against the source documents.
-- The project is intended for local development and demonstration, not an internet-facing production deployment. Add authentication, upload limits, request controls, and deployment hardening before exposing it publicly.
-- Uploaded documents and the local index are stored on the machine running the app.
-
-## Future improvements
-
-- Add semantic retrieval with local embeddings.
-- Add OCR support for scanned documents.
-- Add authentication and upload-size limits.
-- Add tests and continuous integration.
-- Add streaming responses and richer source previews.
-- Add Docker support and deployment instructions.
-
-## Contributing
-
-Issues and pull requests are welcome. For substantial changes, open an issue first to discuss the proposed improvement.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
