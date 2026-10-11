@@ -4,6 +4,7 @@
 
 The application uses **client-side document retrieval with TF-IDF** and a **Hugging Face language model** to generate answers based only on the retrieved passages from the uploaded documents.
 
+ ## Try Knowledge Desk Online
 **Use the live application directly in your browser — no installation required.**
                   https://knowledge-desk.onrender.com
 
